@@ -3,6 +3,7 @@ import { getLojasController } from "../controllers/LojaController.controller";
 
 const router = Router();
 
-router.get("/lojas", getLojasController);
+router.get("/", getLojasController);
+router.get("/:id/caixas", getLojasController);
 
 export default router;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Box, Typography, Grid } from "@mui/material"; // <--- Adicione Grid aqui
+import { Container, Box, Typography, Grid } from "@mui/material";
 import ResumoCard from "../../components/Resumocard";
 import SalesCard from "../../components/SalesCard";
 import DepositCard from "../../components/DepositCard";
@@ -32,20 +32,23 @@ function Conciliacao() {
       </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
+        {/* Sales Card */}
+        <Grid item xs={12} sm={6} md={4}>
           <SalesCard />
         </Grid>
 
-        <Grid item xs={12} md={4}>
-          <DepositCard />
+        {/* Deposit Card - Placeholder */}
+        <Grid item xs={12} sm={6} md={4}>
+          <DepositCard/>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        {/* Resumo Card */}
+        <Grid item xs={12} sm={6} md={4}>
           <ResumoCard
             caixaId={caixaId}
             fetchData={false}
-            totalVendas={1500.0}
-            totalDepositos={1450.0}
+            totalVendas={1500.00}
+            totalDepositos={1450.00}
             status="ABERTO"
             solicitacoes={[]}
             onSolicitarEvidencia={handleSolicitarEvidencia}
