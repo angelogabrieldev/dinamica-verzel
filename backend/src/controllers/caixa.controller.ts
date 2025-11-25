@@ -251,3 +251,27 @@ export const addDepositoController = async (
     res.status(500).json({ error: "Erro ao criar solicitação" });
   }
 };
+
+export const getDepositosController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const depositos = await prisma.deposito.findMany({
+      where: { caixaId: id },
+      include: {
+        caixa: {
+          include: {
+            loja: true,
+          },
+        },
+      },
+    });
+
+    res.status(200).json(depositos);
+  } catch (error) {
+    console.error("Erro ao buscar depósitos:", error);
+    res.status(500).json({ error: "Erro ao buscar depósitos" });
+  }
+};
