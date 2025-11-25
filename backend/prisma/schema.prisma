@@ -9,3 +9,81 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+// -----------------------------------
+// MODELS
+// -----------------------------------
+
+model Loja {
+  id        String        @id @default(uuid())
+  nome      String
+  caixas    Caixa[]
+}
+
+model Caixa {
+  id        String      @id @default(uuid())
+  lojaId    String
+  loja      Loja        @relation(fields: [lojaId], references: [id])
+
+  data      DateTime
+
+  status     StatusCaixa @default(ABERTO)
+
+  depositos         Deposito[]
+  vendas            Venda[]
+  solicitacoes      SolicitacaoEvidencia[]
+
+  @@unique([lojaId, data])
+}
+
+model Venda {
+  id        		String     @id @default(uuid())
+
+  caixaId   		String
+  caixa     		Caixa @relation(fields: [caixaId], references: [id])
+
+  data      DateTime
+  formaDePagamento      FormaDePagamento
+  valor     		Decimal
+  conferido 		Boolean @default(false)
+}
+
+model Deposito {
+  id        String     @id @default(uuid())
+
+  caixaId   String
+  caixa     Caixa @relation(fields: [caixaId], references: [id])
+
+  data      DateTime
+  valor     Decimal
+  conferido Boolean @default(false)
+}
+
+model SolicitacaoEvidencia {
+  id         String      @id @default(uuid())
+
+  caixaId    String
+  caixa      Caixa @relation(fields: [caixaId], references: [id])
+
+  mensagem   String
+  dataEnvio  DateTime @default(now())
+}
+
+// -----------------------------------
+// ENUMS
+// -----------------------------------
+
+enum FormaDePagamento {
+  DINHEIRO
+  PIX
+  CARTAO_CREDITO
+  CARTAO_DEBITO
+  CARTEIRA_DIGITAL
+}
+
+enum StatusCaixa {
+  ABERTO
+  FECHADO
+  AGUARDANDO_RETORNO
+  NAO_INTEGRADO
+}
