@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { prisma, StatusCaixa } from "../services/prisma.service";
+import {
+  FormaDePagamento,
+  prisma,
+  StatusCaixa,
+} from "../services/prisma.service";
 
 /**
  GET /caixas/:id
@@ -106,7 +110,7 @@ export const getResumo = async (req: Request, res: Response): Promise<void> => {
         vendas: { select: { valor: true } },
         depositos: { select: { valor: true } },
       },
-      orderBy: { data: 'desc' },
+      orderBy: { data: "desc" },
     });
 
     const resposta = caixas.map((c) => {
@@ -136,9 +140,46 @@ export const getResumo = async (req: Request, res: Response): Promise<void> => {
     });
 
     res.json(resposta);
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Erro ao listar os resumos de caixa.' });
+    res.status(500).json({ error: "Erro ao listar os resumos de caixa." });
   }
-}
+};
+
+export const addDepositoController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { valor, data } = req.body;
+
+    if (!valor) {
+      res.status(400).json({ error: "Valor é obrigatório." });
+      return;
+    }
+
+    if (!data || !/^\d{2}\/\d{2}\/\d{4}$/.test(String(data))) {
+      res
+        .status(400)
+        .json({ error: "Data inválida. Use o formato DD/MM/YYYY." });
+      return;
+    }
+
+    const [day, month, year] = String(data).split("/");
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    const deposito = await prisma.deposito.create({
+      data: {
+        caixaId: id,
+        valor,
+        data: date,
+      },
+    });
+
+    res.status(201).json(deposito);
+  } catch (error) {
+    console.error("Erro ao criar solicitação:", error);
+    res.status(500).json({ error: "Erro ao criar solicitação" });
+  }
+};
