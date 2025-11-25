@@ -70,6 +70,15 @@ export const addSolicitacaoController = async (
       },
     });
 
+    await prisma.caixa.update({
+      where: {
+        id,
+      },
+      data: {
+        status: StatusCaixa.AGUARDANDO_RETORNO,
+      },
+    });
+
     res.status(201).json(novaSolicitacao);
   } catch (error) {
     console.error("Erro ao criar solicitação:", error);
