@@ -26,3 +26,11 @@ export async function finalizarCaixa(caixaId) {
   if (!res.ok) throw new Error("Erro ao finalizar caixa");
   return res.json();
 }
+
+export async function fetchTransacoes(caixaId) {
+  const res = await fetch(`${API_URL}/caixas/${caixaId}/transacoes`);
+  if (!res.ok) {
+    throw new Error("Erro ao buscar transações do caixa.");
+  }
+  return res.json();
+}
