@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node-dev prisma/seed.ts",
     "start": "node dist/server.js",
+    "build": "tsc",
     "dev": "ts-node-dev src/server.ts"
   },
   "keywords": [],
