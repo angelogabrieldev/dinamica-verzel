@@ -9,6 +9,7 @@ import {
   Button,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import NewDepositModal from "./NewDepositModal";
 
 // MOCK
 const MOCK_DEPOSITOS_INICIAIS = [
@@ -60,6 +61,8 @@ const DepositoItem = ({ deposito, onToggle }) => {
 
 const DepositCard = () => {
   const [depositos, setDepositos] = useState(MOCK_DEPOSITOS_INICIAIS);
+  const [modalOpen, setModalOpen] = useState(false);
+
   const handleToggle = (id) => {
     const novosDepositos = depositos.map((dep) => {
       if (dep.id === id) {
@@ -71,6 +74,15 @@ const DepositCard = () => {
       return dep;
     });
     setDepositos(novosDepositos);
+  };
+
+  const handleAddDeposit = async (newDeposit) => {
+    // Add new deposit with generated ID
+    const novoDeposito = {
+      id: depositos.length > 0 ? Math.max(...depositos.map(d => d.id)) + 1 : 1,
+      ...newDeposit,
+    };
+    setDepositos([...depositos, novoDeposito]);
   };
 
   return (
@@ -104,11 +116,18 @@ const DepositCard = () => {
           fullWidth
           startIcon={<AddIcon />}
           sx={{ textTransform: "none", fontWeight: 600 }}
-          onClick={() => alert("Abrir Modal de Novo Depósito")}
+          onClick={() => setModalOpen(true)}
         >
           Adicionar Depósito
         </Button>
       </Box>
+
+      {/* Modal */}
+      <NewDepositModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleAddDeposit}
+      />
     </Paper>
   );
 };
