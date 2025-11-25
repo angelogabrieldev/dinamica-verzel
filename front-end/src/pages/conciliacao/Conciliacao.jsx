@@ -37,7 +37,7 @@ function Conciliacao() {
           <SalesCard />
         </Grid>
 
-        {/* Deposit Card - Placeholder */}
+        {/* Deposit Card */}
         <Grid item xs={12} sm={6} md={4}>
           <DepositCard/>
         </Grid>
