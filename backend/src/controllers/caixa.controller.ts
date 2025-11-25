@@ -146,6 +146,74 @@ export const getResumo = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ GET /caixas/:id/transacoes
+ Retorna as transações de um caixa (incluindo vendas, depósitos e solicitações)
+*/
+export const getTransacoes = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { tipo = "ambos", ordenar = "data_desc" } = req.query;
+
+    let transacoes: any[] = [];
+
+    if (tipo === "depositos" || tipo === "ambos") {
+      const depositos = await prisma.deposito.findMany({
+        where: { caixaId: id },
+        select: { id: true, valor: true, data: true },
+      });
+
+      transacoes.push(
+        ...depositos.map((d) => ({
+          id: d.id,
+          tipo: "DEPOSITO",
+          valor: Number(d.valor),
+          data: d.data,
+        }))
+      );
+    }
+
+    if (tipo === "vendas" || tipo === "ambos") {
+      const vendas = await prisma.venda.findMany({
+        where: { caixaId: id },
+        select: { id: true, valor: true, data: true },
+      });
+
+      transacoes.push(
+        ...vendas.map((v) => ({
+          id: v.id,
+          tipo: "VENDA",
+          valor: Number(v.valor),
+          data: v.data,
+        }))
+      );
+    }
+
+    switch (ordenar) {
+      case "data_asc":
+        transacoes.sort(
+          (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+        );
+        break;
+
+      case "data_desc":
+      default:
+        transacoes.sort(
+          (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
+        );
+        break;
+    }
+
+    res.json(transacoes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao listar transações." });
+  }
+};
+
 export const addDepositoController = async (
   req: Request,
   res: Response

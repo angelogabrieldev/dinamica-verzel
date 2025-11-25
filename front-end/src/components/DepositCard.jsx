@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Paper,
   Typography,
@@ -7,9 +7,11 @@ import {
   Checkbox,
   Chip,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import NewDepositModal from "./NewDepositModal";
+import { fetchCaixa } from "../services/api";
 
 // MOCK
 const MOCK_DEPOSITOS_INICIAIS = [
@@ -59,9 +61,44 @@ const DepositoItem = ({ deposito, onToggle }) => {
   );
 };
 
-const DepositCard = () => {
+const DepositCard = ({ caixaId = null }) => {
   const [depositos, setDepositos] = useState(MOCK_DEPOSITOS_INICIAIS);
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!caixaId) {
+      setDepositos(MOCK_DEPOSITOS_INICIAIS);
+      return;
+    }
+
+    const fetchDepositos = async () => {
+      setLoading(true);
+      try {
+        const caixa = await fetchCaixa(caixaId);
+        const depositosData = caixa.depositos || [];
+
+        if (depositosData.length > 0) {
+          const depositosFormatted = depositosData.map((dep) => ({
+            id: dep.id,
+            codigo: dep.codigo,
+            valor: parseFloat(dep.valor || 0),
+            status: dep.conferido ? "Conferido" : "Pendente",
+          }));
+          setDepositos(depositosFormatted);
+        } else {
+          setDepositos(MOCK_DEPOSITOS_INICIAIS);
+        }
+      } catch (error) {
+        console.error('Error fetching depositos:', error);
+        setDepositos(MOCK_DEPOSITOS_INICIAIS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepositos();
+  }, [caixaId]);
 
   const handleToggle = (id) => {
     const novosDepositos = depositos.map((dep) => {
@@ -84,6 +121,28 @@ const DepositCard = () => {
     };
     setDepositos([...depositos, novoDeposito]);
   };
+
+  if (loading) {
+    return (
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          height: "100%",
+          borderRadius: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          Carregando depósitos...
+        </Typography>
+      </Paper>
+    );
+  }
 
   return (
     <Paper

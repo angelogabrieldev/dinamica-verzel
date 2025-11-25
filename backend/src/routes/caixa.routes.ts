@@ -5,6 +5,7 @@ import {
   addSolicitacaoController,
   getResumo,
   addDepositoController,
+  getTransacoes,
 } from "../controllers/caixa.controller";
 
 const router = Router();
@@ -14,5 +15,6 @@ router.get("/:id", getCaixa);
 router.post("/:id/depositos", addDepositoController);
 router.patch("/:id/finalizar", finalizarCaixa);
 router.post("/:id/solicitacoes", addSolicitacaoController);
+router.get("/:id/transacoes", getTransacoes);
 
 export default router;
