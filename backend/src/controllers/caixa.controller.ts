@@ -160,12 +160,19 @@ export const getTransacoes = async (
 
     let transacoes: any[] = [];
 
-    if (tipo === "depositos" || tipo === "ambos") {
-      const depositos = await prisma.deposito.findMany({
-        where: { caixaId: id },
-        select: { id: true, valor: true, data: true },
-      });
+    const depositos = await prisma.deposito.findMany({
+      where: { caixaId: id },
+      select: { id: true, valor: true, data: true },
+    });
 
+    const vendas = await prisma.venda.findMany({
+      where: { caixaId: id },
+      select: { id: true, valor: true, data: true },
+    });
+
+    const saldoFinalDoCaixa = depositos.reduce((soma, d) => soma + Number(d.valor), 0) - vendas.reduce((soma, v) => soma + Number(v.valor), 0);
+
+    if (tipo === "depositos" || tipo === "ambos") {
       transacoes.push(
         ...depositos.map((d) => ({
           id: d.id,
@@ -177,11 +184,6 @@ export const getTransacoes = async (
     }
 
     if (tipo === "vendas" || tipo === "ambos") {
-      const vendas = await prisma.venda.findMany({
-        where: { caixaId: id },
-        select: { id: true, valor: true, data: true },
-      });
-
       transacoes.push(
         ...vendas.map((v) => ({
           id: v.id,
@@ -207,7 +209,10 @@ export const getTransacoes = async (
         break;
     }
 
-    res.json(transacoes);
+    res.json({
+      saldoFinal: Number(saldoFinalDoCaixa.toFixed(2)),
+      transacoes,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao listar transações." });
