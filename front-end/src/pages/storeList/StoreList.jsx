@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   TextField,
@@ -6,12 +7,78 @@ import {
   Button,
 } from "@mui/material";
 import { DataTable } from "../../components/DataTable";
+import { fetchLojas, fetchCaixasByLoja } from "../../services/api";
 
 export default function ListaLojas() {
+  const navigate = useNavigate();
   const [date, setDate] = useState("2025-11-25");
   const [statusFilter, setStatusFilter] = useState("Todos");
+  const [rows, setRows] = useState([]);
+  const [lojas, setLojas] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const statusOptions = ["Todos", "Aberto", "Fechado", "Aguardando"];
+
+  // Fetch lojas on component mount
+  useEffect(() => {
+    const loadLojas = async () => {
+      try {
+        const lojasData = await fetchLojas();
+        setLojas(lojasData);
+      } catch (error) {
+        console.error("Error fetching lojas:", error);
+      }
+    };
+
+    loadLojas();
+  }, []);
+
+  // Format date for API (DD/MM/YYYY)
+  const formatDateForApi = (dateString) => {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  // Fetch caixas when date changes
+  useEffect(() => {
+    const loadCaixas = async () => {
+      if (lojas.length === 0) return;
+
+      setLoading(true);
+      try {
+        const caixasPerLoja = await Promise.all(
+          lojas.map(async (loja) => {
+            try {
+              const caixas = await fetchCaixasByLoja(loja.id, formatDateForApi(date));
+              return caixas.map((caixa) => ({
+                id: caixa.id,
+                loja: loja.nome,
+                lojaId: loja.id,
+                data: date.slice(8, 10) + "/" + date.slice(5, 7),
+                vendas: caixa.vendas?.reduce((sum, v) => sum + parseFloat(v.valor || 0), 0) || 0,
+                depositos: caixa.depositos?.reduce((sum, d) => sum + parseFloat(d.valor || 0), 0) || 0,
+                saldo: (caixa.vendas?.reduce((sum, v) => sum + parseFloat(v.valor || 0), 0) || 0) -
+                       (caixa.depositos?.reduce((sum, d) => sum + parseFloat(d.valor || 0), 0) || 0),
+                status: caixa.status === "ABERTO" ? "Aberto" :
+                        caixa.status === "FECHADO" ? "Fechado" : "Aguardando",
+                caixaId: caixa.id,
+              }));
+            } catch (error) {
+              console.error(`Error fetching caixas for loja ${loja.id}:`, error);
+              return [];
+            }
+          })
+        );
+
+        const allCaixas = caixasPerLoja.flat();
+        setRows(allCaixas);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCaixas();
+  }, [date, lojas]);
 
   const columns = [
     { label: "Loja", key: "loja" },
@@ -73,47 +140,16 @@ export default function ListaLojas() {
     },
   ];
 
-  const rows = [
-    {
-      id: 1,
-      loja: "Loja Centro",
-      data: "23/11",
-      vendas: 10000,
-      depositos: 9000,
-      saldo: -1000,
-      status: "Aberto",
-    },
-    {
-      id: 2,
-      loja: "Loja Shopping",
-      data: "25/11",
-      vendas: 5000,
-      depositos: 5000,
-      saldo: 0,
-      status: "Fechado",
-    },
-    {
-      id: 3,
-      loja: "Loja Sul",
-      data: "24/11",
-      vendas: 2000,
-      depositos: 0,
-      saldo: -2000,
-      status: "Aguardando",
-    },
-  ];
-
   const filteredRows = rows.filter((row) => {
     const matchStatus =
       statusFilter === "Todos" || row.status === statusFilter;
 
-    const formattedFilterDate =
-      date.slice(8, 10) + "/" + date.slice(5, 7);
-
-    const matchDate = formattedFilterDate === row.data;
-
-    return matchStatus && matchDate;
+    return matchStatus;
   });
+
+  const handleNavigateToConciliacao = (row) => {
+    navigate(`/conciliacao?caixaId=${row.caixaId}`);
+  };
 
   return (
     <>
@@ -181,6 +217,7 @@ export default function ListaLojas() {
                 display: "flex",
                 justifyContent: "center",
               }}
+              onClick={() => handleNavigateToConciliacao(row)}
             >
               {row.status === "Aberto"
                 ? "Conciliar"
