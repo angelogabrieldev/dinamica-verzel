@@ -9,7 +9,8 @@ import {
   ListItem,
   Divider,
   CircularProgress,
-  Alert
+  Alert,
+  Paper
 } from '@mui/material';
 import {
   Warning as WarningIcon,
@@ -131,17 +132,38 @@ const ResumoCard = ({
 
   if (isLoading && fetchData) {
     return (
-      <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <Paper
+        elevation={2}
+        sx={{
+          p: 3,
+          height: '100%',
+          borderRadius: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
         <CircularProgress />
         <Typography variant="body2" fontWeight={600} color="text.secondary" sx={{ mt: 2 }}>
           Carregando dados...
         </Typography>
-      </Box>
+      </Paper>
     );
   }
 
   return (
-    <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <Paper
+      elevation={2}
+      sx={{
+        p: 3,
+        height: '100%',
+        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative'
+      }}
+    >
       {/* Header with Status */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
         <Typography 
@@ -350,7 +372,7 @@ const ResumoCard = ({
           </Typography>
         </Box>
       )}
-    </Box>
+    </Paper>
   );
 };
 
