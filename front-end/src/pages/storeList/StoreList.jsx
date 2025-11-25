@@ -5,9 +5,11 @@ import {
   TextField,
   MenuItem,
   Button,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { DataTable } from "../../components/DataTable";
-import { fetchLojas, fetchCaixasByLoja } from "../../services/api";
+import { fetchLojas, fetchCaixasByLoja, fetchCaixa } from "../../services/api";
 
 export default function ListaLojas() {
   const navigate = useNavigate();
@@ -50,7 +52,21 @@ export default function ListaLojas() {
           lojas.map(async (loja) => {
             try {
               const caixas = await fetchCaixasByLoja(loja.id, formatDateForApi(date));
-              return caixas.map((caixa) => ({
+
+              // Fetch detailed info for each caixa to get vendas and depositos
+              const detailedCaixas = await Promise.all(
+                caixas.map(async (caixa) => {
+                  try {
+                    const detailedCaixa = await fetchCaixa(caixa.id);
+                    return detailedCaixa;
+                  } catch (error) {
+                    console.error(`Error fetching detailed caixa ${caixa.id}:`, error);
+                    return caixa;
+                  }
+                })
+              );
+
+              return detailedCaixas.map((caixa) => ({
                 id: caixa.id,
                 loja: loja.nome,
                 lojaId: loja.id,
@@ -199,9 +215,22 @@ export default function ListaLojas() {
         </Button>
       </Box>
 
-      <DataTable
-        columns={columns}
-        rows={filteredRows}
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {!loading && filteredRows.length === 0 && (
+        <Alert severity="info">
+          Nenhum caixa encontrado para a data e filtros selecionados.
+        </Alert>
+      )}
+
+      {!loading && filteredRows.length > 0 && (
+        <DataTable
+          columns={columns}
+          rows={filteredRows}
         actionsColumn={{
           label: "Ação",
           render: (row) => (
@@ -228,6 +257,7 @@ export default function ListaLojas() {
           ),
         }}
       />
+      )}
     </>
   );
 }
