@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getCaixaById } from "../controllers/caixa.controller";
+import { getCaixa, finalizarCaixa } from "../controllers/caixa.controller";
 
 const router = Router();
 
-router.get("/:id", getCaixaById);
+router.get("/:id", getCaixa);
+router.patch("/:id/finalizar", finalizarCaixa);
 
 export default router;
