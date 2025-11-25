@@ -5,7 +5,7 @@ import lojasRoutes from "./routes/loja.routes";
 
 const app = express();
 
-app.use(cors);
+app.use(cors());
 app.use(express.json());
 app.use(loggerMiddleware);
 
