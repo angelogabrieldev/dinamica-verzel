@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node-dev src/prisma/seed.ts",
+    "seed": "ts-node-dev prisma/seed.ts",
     "start": "node dist/server.js",
     "dev": "ts-node-dev src/server.ts"
   },
@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@prisma/adapter-better-sqlite3": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "cors": "^2.8.5",
