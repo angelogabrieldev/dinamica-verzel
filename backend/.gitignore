@@ -3,6 +3,9 @@ node_modules
 .env
 dev.db
 
+dist
+out
+
 /src/generated/prisma
 
 /src/generated/prisma
