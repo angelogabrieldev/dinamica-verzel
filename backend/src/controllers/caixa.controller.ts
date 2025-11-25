@@ -70,9 +70,75 @@ export const addSolicitacaoController = async (
       },
     });
 
+    await prisma.caixa.update({
+      where: {
+        id,
+      },
+      data: {
+        status: StatusCaixa.AGUARDANDO_RETORNO,
+      },
+    });
+
     res.status(201).json(novaSolicitacao);
   } catch (error) {
     console.error("Erro ao criar solicitação:", error);
     res.status(500).json({ error: "Erro ao criar solicitação" });
   }
 };
+
+/**
+ GET /caixas/resumo
+ Retorna um caixa com seus dados (incluindo vendas, depósitos e solicitações)
+*/
+export const getResumo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { data, status } = req.query;
+
+    const filtros: any = {};
+
+    if (data) filtros.data = new Date(String(data));
+    if (status) filtros.status = String(status);
+
+    const caixas = await prisma.caixa.findMany({
+      where: filtros,
+      include: {
+        loja: true,
+        vendas: { select: { valor: true } },
+        depositos: { select: { valor: true } },
+      },
+      orderBy: { data: 'desc' },
+    });
+
+    const resposta = caixas.map((c) => {
+      const round = (value: number) => Math.floor(value * 100) / 100;
+
+      const totalVendas = c.vendas.reduce(
+        (soma, v) => soma + Number(v.valor),
+        0
+      );
+
+      const totalDepositos = c.depositos.reduce(
+        (soma, d) => soma + Number(d.valor),
+        0
+      );
+
+      const saldo = totalVendas - totalDepositos;
+
+      return {
+        id: c.id,
+        loja: c.loja.nome,
+        data: c.data,
+        status: c.status,
+        totalVendas: round(totalVendas),
+        totalDepositos: round(totalDepositos),
+        saldo: round(saldo),
+      };
+    });
+
+    res.json(resposta);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao listar os resumos de caixa.' });
+  }
+}
