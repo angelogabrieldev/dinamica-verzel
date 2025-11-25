@@ -6,13 +6,15 @@ export default function MainLayout() {
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <AppBar position="static" elevation={1}>
         <Toolbar>
-          <Typography variant="h6">Verzel Conciliação</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            <span style={{ fontWeight: 800 }}>Verzel</span> Conciliação
+          </Typography>
         </Toolbar>
       </AppBar>
 
-      <Container sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ p: 4, width: "100%" }}>
         <Outlet />
-      </Container>
+      </Box>
     </Box>
   );
 }
